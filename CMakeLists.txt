@@ -3,4 +3,4 @@ project(MatrixInvertion)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(MatrixInvertion main.cpp)
+add_executable(MatrixInvertion #[[main.cpp]] manuallyVectorisation.cpp)
