@@ -6,8 +6,8 @@ using namespace std;
 
 
 union float4 {
-  v4sf vector;
-  float array[4];
+    v4sf vector;
+    float array[4];
 };
 
 /// OK!
@@ -17,18 +17,18 @@ void generateMatrixAndCountTranspose(v4sf *matrix, v4sf *transposed, int n) {
         for (int j = 0; j < n / 4; j++) {
             for (int k = 0; k < 4; k++) {
                 auto random = ((float) rand()) / ((float) RAND_MAX) * 100;
-                int a = j * 8 + k*(n/4) + (i / 4);
+                int a = j * 8 + k * (n / 4) + (i / 4);
                 int b = i % 4;
-                matrix[i*n/4 + j][k] = random;
+                matrix[i * n / 4 + j][k] = random;
                 cout << "into " << a << "," << b << " " << random << "\n";
-                transposed[j * 8 + k*(n/4) + (i  / 4)][i % 4] = random;
+                transposed[j * 8 + k * (n / 4) + (i / 4)][i % 4] = random;
             }
 
             cout << "\n==================== MATRIX ==================== \n";
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n / 4; j++) {
                     for (int k = 0; k < 4; k++) {
-                        cout << matrix[i*(n/4) + j][k] << " ";
+                        cout << matrix[i * (n / 4) + j][k] << " ";
 
                     }
 
@@ -41,7 +41,7 @@ void generateMatrixAndCountTranspose(v4sf *matrix, v4sf *transposed, int n) {
             for (int m = 0; m < n; m++) {
                 for (int q = 0; q < n / 4; q++) {
                     for (int k = 0; k < 4; k++) {
-                        cout << transposed[m*(n/4) + q][k] << " ";
+                        cout << transposed[m * (n / 4) + q][k] << " ";
                     }
 
                 }
@@ -147,18 +147,44 @@ void countSeries(const float *one, const float *r, float *result, int n, int m) 
     }
 }
 
+void countMinors(v4sf *matrix, v4sf *transposed, float *minorOne, float *minorInfinity, int n) {
+    float maxOneMinor = 0;
+    float maxInfMinor = 0;
+    v4sf vectorSumInf[n / 4], vectorSumOne[n / 4];
+    // I - Столбец, J - Вектор в столбце
+    for (int j = 0; j < n / 4; j++) {
+        for (int i = 0; i < n; i++) {
+            vectorSumInf[j] += transposed[i + j];
+            vectorSumOne[j] += matrix[i + j];
+        }
+    }
+
+    for (int i = 0; i < n / 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            maxOneMinor = max(maxOneMinor, vectorSumOne[i][j]);
+            maxInfMinor = max(maxInfMinor, vectorSumInf[i][j]);
+        }
+    }
+    *minorOne = maxOneMinor;
+    *minorInfinity = maxInfMinor;
+}
+
 int main() {
     int n, m;
     cin >> n >> m;
 
-    v4sf matrix[n*n/4], one[n * n], transposed[n*n/4], b[n * n], bTrans[n * n], r[n * n];
+    v4sf matrix[n * n / 4], one[n * n], transposed[n * n / 4], b[n * n], bTrans[n * n], r[n * n];
+    float minorInfinity, minorOne = 0.0f;
     generateMatrixAndCountTranspose(matrix, transposed, n);
-    // (transposed[1])[0] = 36.49f;
+    countMinors(matrix, transposed, &minorOne, &minorInfinity, n);
+
+    cout << "minors : " << minorOne << " " << minorInfinity << endl;
+
     cout << "\n==================== MATRIX ==================== \n";
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n / 4; j++) {
             for (int k = 0; k < 4; k++) {
-                cout << matrix[i*n/4 + j][k] << " ";
+                cout << matrix[i * (n / 4) + j][k] << " ";
 
             }
 
@@ -172,7 +198,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n / 4; j++) {
             for (int k = 0; k < 4; k++) {
-                cout << transposed[i*n/4 + j][k] << " ";
+                cout << transposed[i * (n / 4) + j][k] << " ";
             }
 
         }
