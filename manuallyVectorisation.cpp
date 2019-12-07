@@ -76,11 +76,18 @@ float transposeAndCountInfinityMinor(const float *matrix, float *transp, int n) 
 }
 
 /// OK!
-void
-divideToScalarAndCountResultTranspose(const float *matrix, float *result, float *resultTrans, int n, float scalar) {
+// Todo remake
+void divideToScalarAndCountResultTranspose(const v4sf *matrix, v4sf *result, v4sf *resultTrans, int n, float scalar) {
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++)
-            resultTrans[j * n + i] = result[i * n + j] = matrix[i * n + j] / scalar;
+        result[i] = matrix[i]/scalar;
+    }
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n / 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                resultTrans[j * 8 + k * (n / 4) + (i / 4)][i % 4] = result[i * n / 4 + j][k];
+            }
+        }
     }
 }
 
@@ -173,10 +180,11 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    v4sf matrix[n * n / 4], one[n * n], transposed[n * n / 4], b[n * n], bTrans[n * n], r[n * n];
+    v4sf matrix[n * (n / 4)], one[n * n], transposed[n * (n / 4)], b[n * (n / 4)], bTrans[n * (n / 4)], r[n * n];
     float minorInfinity, minorOne = 0.0f;
     generateMatrixAndCountTranspose(matrix, transposed, n);
     countMinors(matrix, transposed, &minorOne, &minorInfinity, n);
+    divideToScalarAndCountResultTranspose(matrix, b, bTrans, n, minorInfinity*minorOne);
 
     cout << "minors : " << minorOne << " " << minorInfinity << endl;
 
@@ -206,6 +214,31 @@ int main() {
     }
     cout << "\n";
 
+    cout << "\n==================== B ==================== \n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n / 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                cout << b[i * (n / 4) + j][k] << " ";
+
+            }
+
+        }
+        cout << "\n";
+    }
+    cout << "\n";
+
+    cout << "\n==================== B_Trans ==================== \n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n / 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                cout << bTrans[i * (n / 4) + j][k] << " ";
+
+            }
+
+        }
+        cout << "\n";
+    }
+    cout << "\n";
 
     /*generateOneMatrix(one, n);
 
