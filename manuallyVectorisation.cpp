@@ -21,10 +21,10 @@ void generateMatrixAndCountTranspose(v4sf *matrix, v4sf *transposed, int n) {
                 int b = i % 4;
                 matrix[i * n / 4 + j][k] = random;
                 cout << "into " << a << "," << b << " " << random << "\n";
-                transposed[j * 8 + k * (n / 4) + (i / 4)][i % 4] = random;
+                transposed[j * n + k * (n / 4) + (i / 4)][i % 4] = random;
             }
 
-            cout << "\n==================== MATRIX ==================== \n";
+            cout << "\n==================== MATRIX_INTO ==================== \n";
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n / 4; j++) {
                     for (int k = 0; k < 4; k++) {
@@ -37,7 +37,7 @@ void generateMatrixAndCountTranspose(v4sf *matrix, v4sf *transposed, int n) {
             }
             cout << "\n";
 
-            cout << "\n==================== TRANSPOSED ==================== \n";
+            cout << "\n==================== TRANSPOSED_INTO ==================== \n";
             for (int m = 0; m < n; m++) {
                 for (int q = 0; q < n / 4; q++) {
                     for (int k = 0; k < 4; k++) {
@@ -76,35 +76,57 @@ float transposeAndCountInfinityMinor(const float *matrix, float *transp, int n) 
 }
 
 /// OK!
-// Todo remake
 void divideToScalarAndCountResultTranspose(const v4sf *matrix, v4sf *result, v4sf *resultTrans, int n, float scalar) {
-    for (int i = 0; i < n; i++) {
-        result[i] = matrix[i]/scalar;
+    for (int i = 0; i < n * (n / 4); i++) {
+        result[i] = matrix[i] / scalar;
     }
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n / 4; j++) {
             for (int k = 0; k < 4; k++) {
-                resultTrans[j * 8 + k * (n / 4) + (i / 4)][i % 4] = result[i * n / 4 + j][k];
+                resultTrans[j * n + k * (n / 4) + (i / 4)][i % 4] = result[i * n / 4 + j][k];
             }
         }
     }
 }
 
 /**
- * You must send transposed matrix in this function
+ * @details You must send transposed matrix in this function
  * @param matrix
  * @param transposed
  * @param n
  */
-void multiplyToTransposed(const float *matrix, const float *transposed, float *result, int n) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            float currentSum = 0;
-            for (int k = 0; k < n; k++) {
-                currentSum += matrix[j * n + k] * transposed[i * n + k];
+void multiplyToTransposed(const v4sf *matrix, const v4sf *transposed, v4sf *result, int n) {
+    for (int j = 0; j < n; j++) {
+        v4sf multed[n * n / 4];
+        for (int k = 0; k < n / 4; k++) {
+            for (int i = 0; i < n; i += n / 4) {
+                multed[i + k] = matrix[j * (n / 4) + k] * transposed[i + k];
             }
-            result[j * n + i] = currentSum;
+        }
+
+        for (int p = 0; p < n; p++) {
+            float sum = 0;
+            for (int q = 0; q < n / 4; q++) {
+                for (int k = 0; k < 4; k++) {
+                    sum += multed[p * (n / 4) + q][k];
+                }
+            }
+            cout << "SUM " << sum << endl;
+            result[j * (n / 4) + p / 4][p % 4] = sum;
+
+            cout << "\n==================== RESsssss ==================== \n";
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n / 4; j++) {
+                    for (int k = 0; k < 4; k++) {
+                        cout << result[i * (n / 4) + j][k] << " ";
+
+                    }
+
+                }
+                cout << "\n";
+            }
+            cout << "\n";
         }
     }
 }
@@ -113,7 +135,7 @@ void multiplyToTransposed(const float *matrix, const float *transposed, float *r
 void countR(const float *one, const float *b, const float *transposed, float *r, int n) {
     float t[n * n];
 
-    multiplyToTransposed(b, transposed, t, n);
+    //multiplyToTransposed(b, transposed, t, n);
 
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
@@ -143,7 +165,7 @@ void countSeries(const float *one, const float *r, float *result, int n, int m) 
         for (int k = 0; k < m - 2; k++) {
 
             float multed[n * n];
-            multiplyToTransposed(r, current, multed, n);
+            //multiplyToTransposed(r, current, multed, n);
 
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++) {
@@ -155,20 +177,27 @@ void countSeries(const float *one, const float *r, float *result, int n, int m) 
 }
 
 void countMinors(v4sf *matrix, v4sf *transposed, float *minorOne, float *minorInfinity, int n) {
-    float maxOneMinor = 0;
-    float maxInfMinor = 0;
+
+    float maxOneMinor = 0.0f, maxInfMinor = 0.0f;
     v4sf vectorSumInf[n / 4], vectorSumOne[n / 4];
-    // I - Столбец, J - Вектор в столбце
-    for (int j = 0; j < n / 4; j++) {
-        for (int i = 0; i < n; i++) {
-            vectorSumInf[j] += transposed[i + j];
-            vectorSumOne[j] += matrix[i + j];
+
+    for (int v = 0; v<n/4; v++) {
+        vectorSumOne[v] = v4sf{0,0,0,0};
+        vectorSumInf[v] = v4sf{0,0,0,0};
+        for (int l=0; l<n; l++){
+            vectorSumOne[v] += transposed[v+l*(n/4)];
+            vectorSumInf[v] += matrix[v+l*(n/4)];
         }
     }
+
+    for (int k = 0; k < n / 4; k++)
+        for (int p = 0; p < 4; p++)
+            cout << "vector " << k << "," << p << ":" << vectorSumOne[k][p] << endl;
 
     for (int i = 0; i < n / 4; i++) {
         for (int j = 0; j < 4; j++) {
             maxOneMinor = max(maxOneMinor, vectorSumOne[i][j]);
+            cout << "maxOne: " << maxOneMinor << endl;
             maxInfMinor = max(maxInfMinor, vectorSumInf[i][j]);
         }
     }
@@ -180,13 +209,11 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    v4sf matrix[n * (n / 4)], one[n * n], transposed[n * (n / 4)], b[n * (n / 4)], bTrans[n * (n / 4)], r[n * n];
+    v4sf matrix[n * (n / 4)], res[n * (n / 4)], one[n * (n / 4)], transposed[n * (n / 4)], b[n * (n / 4)], bTrans[
+            n * (n / 4)], r[n * n];
+
     float minorInfinity, minorOne = 0.0f;
     generateMatrixAndCountTranspose(matrix, transposed, n);
-    countMinors(matrix, transposed, &minorOne, &minorInfinity, n);
-    divideToScalarAndCountResultTranspose(matrix, b, bTrans, n, minorInfinity*minorOne);
-
-    cout << "minors : " << minorOne << " " << minorInfinity << endl;
 
     cout << "\n==================== MATRIX ==================== \n";
     for (int i = 0; i < n; i++) {
@@ -214,6 +241,16 @@ int main() {
     }
     cout << "\n";
 
+    countMinors(matrix, transposed, &minorOne, &minorInfinity, n);
+    cout << "================ Minors: " << minorOne << " , " << minorInfinity << endl;
+
+    divideToScalarAndCountResultTranspose(matrix, b, bTrans, n, minorInfinity * minorOne);
+
+    cout << "================ Minors: " << minorOne << " , " << minorInfinity << endl;
+
+    multiplyToTransposed(matrix, transposed, res, n);
+
+
     cout << "\n==================== B ==================== \n";
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n / 4; j++) {
@@ -232,6 +269,19 @@ int main() {
         for (int j = 0; j < n / 4; j++) {
             for (int k = 0; k < 4; k++) {
                 cout << bTrans[i * (n / 4) + j][k] << " ";
+
+            }
+
+        }
+        cout << "\n";
+    }
+    cout << "\n";
+
+    cout << "\n==================== RESULT ==================== \n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n / 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                cout << matrix[i * (n / 4) + j][k] << " ";
 
             }
 
