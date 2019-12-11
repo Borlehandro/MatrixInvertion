@@ -53,11 +53,12 @@ void generateMatrixAndCountTranspose(v4sf *matrix, v4sf *transposed, int n) {
 }
 
 /// OK!
-void generateOneMatrix(float *matrix, int n) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++)
-            matrix[i * n + j] = (i == j);
-    }
+void generateOneMatrix(v4sf *matrix, int n) {
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < (n / 4); j++)
+            for (int k = 0; k < 4; k++) {
+                matrix[i * (n/4) + j][k] = (j*4+k == i);
+            }
 }
 
 /// OK!
@@ -100,8 +101,8 @@ void multiplyToTransposed(const v4sf *matrix, const v4sf *transposed, v4sf *resu
     for (int j = 0; j < n; j++) {
         v4sf multed[n * n / 4];
         for (int k = 0; k < n / 4; k++) {
-            for (int i = 0; i < n; i ++) {
-                multed[i*(n/4) + k] = matrix[j * (n / 4) + k] * transposed[i*(n/4) + k];
+            for (int i = 0; i < n; i++) {
+                multed[i * (n / 4) + k] = matrix[j * (n / 4) + k] * transposed[i * (n / 4) + k];
             }
         }
 
@@ -181,12 +182,12 @@ void countMinors(v4sf *matrix, v4sf *transposed, float *minorOne, float *minorIn
     float maxOneMinor = 0.0f, maxInfMinor = 0.0f;
     v4sf vectorSumInf[n / 4], vectorSumOne[n / 4];
 
-    for (int v = 0; v<n/4; v++) {
-        vectorSumOne[v] = v4sf{0,0,0,0};
-        vectorSumInf[v] = v4sf{0,0,0,0};
-        for (int l=0; l<n; l++){
-            vectorSumOne[v] += transposed[v+l*(n/4)];
-            vectorSumInf[v] += matrix[v+l*(n/4)];
+    for (int v = 0; v < n / 4; v++) {
+        vectorSumOne[v] = v4sf{0, 0, 0, 0};
+        vectorSumInf[v] = v4sf{0, 0, 0, 0};
+        for (int l = 0; l < n; l++) {
+            vectorSumOne[v] += transposed[v + l * (n / 4)];
+            vectorSumInf[v] += matrix[v + l * (n / 4)];
         }
     }
 
@@ -209,12 +210,24 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    v4sf matrix[n * (n / 4)], res[n * (n / 4)], one[n * (n / 4)], transposed[n * (n / 4)], b[n * (n / 4)], bTrans[n * (n / 4)], r[n * (n / 4)];
+    v4sf matrix[n * (n / 4)], res[n * (n / 4)], one[n * (n / 4)], transposed[n * (n / 4)], b[n * (n / 4)], bTrans[
+            n * (n / 4)], r[n * (n / 4)];
 
     float minorInfinity, minorOne = 0.0f;
     generateMatrixAndCountTranspose(matrix, transposed, n);
+    generateOneMatrix(one, n);
 
+    cout << "\n==================== 1 ==================== \n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n / 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                cout << one[i * (n / 4) + j][k] << " ";
+            }
 
+        }
+        cout << "\n";
+    }
+    cout << "\n";
 
     cout << "\n==================== TRANSPOSED ==================== \n";
     for (int i = 0; i < n; i++) {
