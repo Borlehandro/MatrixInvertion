@@ -133,14 +133,13 @@ void multiplyToTransposed(const v4sf *matrix, const v4sf *transposed, v4sf *resu
 }
 
 /// OK!
-void countR(const float *one, const float *b, const float *transposed, float *r, int n) {
-    float t[n * n];
+void countR(const v4sf *one, const v4sf *b, const v4sf *transposed, v4sf *r, int n) {
+    v4sf t[n *(n/4)];
 
-    //multiplyToTransposed(b, transposed, t, n);
+    multiplyToTransposed(b, transposed, t, n);
 
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            r[i * n + j] = one[i * n + j] - t[i * n + j];
+    for (int i=0; i<n*(n/4); i++)
+            r[i] = one[i] - t[i];
 }
 
 void countSeries(const float *one, const float *r, float *result, int n, int m) {
@@ -248,7 +247,19 @@ int main() {
 
     cout << "================ Minors: " << minorOne << " , " << minorInfinity << endl;
 
-    multiplyToTransposed(b, transposed, res, n);
+    // multiplyToTransposed(b, transposed, res, n);
+
+    b[0] = v4sf{5,2,3,1};
+    b[1] = v4sf{4,1,2,3};
+    b[2] = v4sf{1,2,3,4};
+    b[3] = v4sf{5,4,3,2};
+
+    transposed[0] = v4sf{1,4,2,4};
+    transposed[1] = v4sf{2,1,1,1};
+    transposed[2] = v4sf{3,2,3,3};
+    transposed[3] = v4sf{4,3,4,2};
+
+    countR(one, b, transposed, r, n);
 
 
     cout << "\n==================== MATRIX ==================== \n";
@@ -291,11 +302,11 @@ int main() {
     }
     cout << "\n";
 
-    cout << "\n==================== RESULT ==================== \n";
+    cout << "\n==================== R ==================== \n";
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n / 4; j++) {
             for (int k = 0; k < 4; k++) {
-                cout << res[i * (n / 4) + j][k] << " ";
+                cout << r[i * (n / 4) + j][k] << " ";
 
             }
 
