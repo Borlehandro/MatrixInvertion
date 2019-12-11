@@ -100,22 +100,22 @@ void multiplyToTransposed(const v4sf *matrix, const v4sf *transposed, v4sf *resu
     for (int j = 0; j < n; j++) {
         v4sf multed[n * n / 4];
         for (int k = 0; k < n / 4; k++) {
-            for (int i = 0; i < n; i += n / 4) {
-                multed[i + k] = matrix[j * (n / 4) + k] * transposed[i + k];
+            for (int i = 0; i < n; i ++) {
+                multed[i*(n/4) + k] = matrix[j * (n / 4) + k] * transposed[i*(n/4) + k];
             }
         }
 
         for (int p = 0; p < n; p++) {
-            float sum = 0;
+            float sum = 0.0f;
             for (int q = 0; q < n / 4; q++) {
                 for (int k = 0; k < 4; k++) {
                     sum += multed[p * (n / 4) + q][k];
                 }
             }
-            cout << "SUM " << sum << endl;
+            // cout << "SUM " << sum << endl;
             result[j * (n / 4) + p / 4][p % 4] = sum;
 
-            cout << "\n==================== RESsssss ==================== \n";
+            /*cout << "\n==================== RESsssss ==================== \n";
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n / 4; j++) {
                     for (int k = 0; k < 4; k++) {
@@ -126,7 +126,7 @@ void multiplyToTransposed(const v4sf *matrix, const v4sf *transposed, v4sf *resu
                 }
                 cout << "\n";
             }
-            cout << "\n";
+            cout << "\n";*/
         }
     }
 }
@@ -209,24 +209,11 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    v4sf matrix[n * (n / 4)], res[n * (n / 4)], one[n * (n / 4)], transposed[n * (n / 4)], b[n * (n / 4)], bTrans[
-            n * (n / 4)], r[n * n];
+    v4sf matrix[n * (n / 4)], res[n * (n / 4)], one[n * (n / 4)], transposed[n * (n / 4)], b[n * (n / 4)], bTrans[n * (n / 4)], r[n * (n / 4)];
 
     float minorInfinity, minorOne = 0.0f;
     generateMatrixAndCountTranspose(matrix, transposed, n);
 
-    cout << "\n==================== MATRIX ==================== \n";
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n / 4; j++) {
-            for (int k = 0; k < 4; k++) {
-                cout << matrix[i * (n / 4) + j][k] << " ";
-
-            }
-
-        }
-        cout << "\n";
-    }
-    cout << "\n";
 
 
     cout << "\n==================== TRANSPOSED ==================== \n";
@@ -248,7 +235,21 @@ int main() {
 
     cout << "================ Minors: " << minorOne << " , " << minorInfinity << endl;
 
-    multiplyToTransposed(matrix, transposed, res, n);
+    multiplyToTransposed(b, transposed, res, n);
+
+
+    cout << "\n==================== MATRIX ==================== \n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n / 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                cout << matrix[i * (n / 4) + j][k] << " ";
+
+            }
+
+        }
+        cout << "\n";
+    }
+    cout << "\n";
 
 
     cout << "\n==================== B ==================== \n";
@@ -281,7 +282,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n / 4; j++) {
             for (int k = 0; k < 4; k++) {
-                cout << matrix[i * (n / 4) + j][k] << " ";
+                cout << res[i * (n / 4) + j][k] << " ";
 
             }
 
