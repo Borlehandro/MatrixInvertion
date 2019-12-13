@@ -113,27 +113,18 @@ void countSeries(const float *one, const float *r, float *result, long long n, l
 }
 
 int main() {
+
     long long n,m;
     cin >> n >> m;
-    cout << SIZE_MAX << "\n";
+
     auto *matrix = (float*)malloc(n*n*sizeof(float)); auto *one = (float*)malloc(n*n*sizeof(float));  auto *transposed = (float*)malloc(n*n*sizeof(float));
     auto *b = (float*)malloc(n*n*sizeof(float)); auto *bTrans = (float*)malloc(n*n*sizeof(float)); auto *r = (float*)malloc(n*n*sizeof(float));
+
     float oneMinor = generateMatrixAndCountOneMinor(matrix, n);
 
-    /*cout << "\n==================== MATRIX ==================== \n";
-    for (long long i=0; i<n; i++) {
-        for (long long j = 0; j < n; j++)
-            cout << matrix[i*n+j] << " ";
-        cout << "\n";
-    }
-    cout << "\n";*/
     generateOneMatrix(one, n);
 
     float infinityMinor = transposeAndCountInfinityMinor(matrix, transposed, n);
-
-    /*cout << "oneMinor: " << oneMinor << "\n";
-    cout << "infinityMinor: " << infinityMinor << "\n";*/
-
 
     divideToScalarAndCountResultTranspose(transposed, b, bTrans, n, oneMinor * infinityMinor);
 
@@ -144,13 +135,6 @@ int main() {
 
     auto *result = (float*)malloc(n*n*sizeof(float));
     multiplyToTransposed(series, bTrans, result, n);
-
-    /*cout << "\n==================== RESULT ==================== \n";
-    for (long long i=0; i<n; i++) {
-        for (long long j = 0; j < n; j++)
-            cout << result[i * n + j] << " ";
-        cout << "\n";
-    }*/
 
     // Checking
     /*auto *rt = (float*)malloc(n*n*sizeof(float));
